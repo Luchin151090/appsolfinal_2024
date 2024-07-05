@@ -32,7 +32,7 @@ class _FormuState extends State<Formu> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   String apiUrl = dotenv.env['API_URL'] ?? '';
   String apiCreateUser = '/api/user_cliente';
-
+  int status = 0;
   Future<dynamic> registrar(nombre, apellidos, dni, sexo, fecha, fechaAct,
       nickname, contrasena, email, telefono, ruc) async {
     showDialog(
@@ -53,7 +53,7 @@ class _FormuState extends State<Formu> {
       String fechaFormateada = DateFormat('yyyy-MM-dd').format(fechaNacimiento);
       String fechaActual = DateFormat('yyyy-MM-dd').format(fechaAct);
 
-      await http.post(Uri.parse(apiUrl + apiCreateUser),
+      var res = await http.post(Uri.parse(apiUrl + apiCreateUser),
           headers: {"Content-type": "application/json"},
           body: jsonEncode({
             "rol_id": 4,
@@ -77,6 +77,15 @@ class _FormuState extends State<Formu> {
             "banco_retiro": "NA",
             "numero_cuenta": "NA"
           }));
+      if (res.statusCode == 200) {
+        setState(() {
+          status = 200;
+        });
+      } else if (res.statusCode == 401) {
+        setState(() {
+          status = 401;
+        });
+      }
     } catch (e) {
       throw Exception('$e');
     }
@@ -92,7 +101,7 @@ class _FormuState extends State<Formu> {
     double tamanoHint = largoActual * 0.018;
     DateTime tiempoActual = DateTime.now();
     Color textoIngreso = Color.fromARGB(255, 84, 84, 84);
-    final userProvider = context.watch<UserProvider>();
+    //final userProvider = context.watch<UserProvider>();
 
     return Scaffold(
         body: DecoratedBox(
@@ -507,6 +516,7 @@ class _FormuState extends State<Formu> {
                       child: ElevatedButton(
                         onPressed: () async {
                           if (_formKey.currentState!.validate()) {
+                            
                             await registrar(
                                 _nombres.text,
                                 _apellidos.text,
@@ -520,15 +530,44 @@ class _FormuState extends State<Formu> {
                                 _telefono.text,
                                 _ruc.text);
                             // USUARIO NUEVO PARA CONTROL DE BIDON
-                           /* setState(() {
+                            /* setState(() {
                               userProvider.user?.esNuevo = true;
                             });*/
-
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => const Login()),
-                            );
+                            if (status == 200) {
+                              Navigator.of(context).pop();
+                              print("----entro al 200");
+                              showDialog(
+                                context: context,
+                                builder: (context) {
+                                  return const Center(
+                                    child: CircularProgressIndicator(
+                                      color: Colors.white,
+                                    ),
+                                  );
+                                });
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => const Login()),
+                              );
+                            }else if(status == 401){
+                              print("entro al 40");
+                              Navigator.of(context).pop();
+                              showDialog(
+                                  context: context,
+                                  builder: (BuildContext context) {
+                                    return const AlertDialog(
+                                      content: Row(
+                                        children: [
+                                          //SizedBox(width: 20),
+                                          Text(" =, )"),
+                                          Text(" Intente otro usuario por favor!"),
+                                        ],
+                                      ),
+                                    );
+                                  },
+                                );
+                            }
                           }
                         },
                         style: ButtonStyle(

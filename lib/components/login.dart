@@ -150,6 +150,7 @@ class _LoginState extends State<Login> {
       String? email,
       String? telefono) async {
     try {
+      print("aqui?");
       await http.post(Uri.parse(apiUrl + apiCreateUser),
           headers: {"Content-type": "application/json"},
           body: jsonEncode({
