@@ -1,4 +1,4 @@
-package com.example.appsol_final
+package com.aguasol.appsol_final
 
 import io.flutter.embedding.android.FlutterActivity
 
